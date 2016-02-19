@@ -1,22 +1,15 @@
 {% extends "layout.html" %}
 {% block body %}
-  {% if session.logged_in %}
-    <form action="{{ url_for('publish') }}" method=post class=add-entry>
-      <dl>
-        <dt>Title:
-        <dd><input type=text size=30 name=title>
-        <dt>Text:
-        <dd><textarea name=text rows=5 cols=40></textarea>
-        <dd><input type=submit value=Share>
-      </dl>
-    </form>
-  {% endif %}
     <ul class=entries>
     {% for entry in entries %}
         <li>
           <h2>
             <a href="{{url_for('show_blog', blogid=entry.blogid)}}">{{ entry.title }}</a>
           </h2>
+            <p>
+            <a href="{{url_for('edit_blog', blogid=entry.blogid)}}">edit</a>
+            <a href="{{url_for('del_blog', blogid=entry.blogid)}}">delete</a>
+            </p>
           <p>{{ entry.text|safe }}</p>
         </li>
     {% else %}
