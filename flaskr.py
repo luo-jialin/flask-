@@ -14,10 +14,57 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def home_page():
-    return render_template('show_entries.html')
+    qsession = get_session()
+    entries = qsession.query(blogtable).filter_by(userid=session['cur_user_id']).all()
+    return render_template('show_entries.html', entries=entries)
 
-@app.route('/add_entry', methods=['GET', 'POST'])
-def add_entry():
+@app.route('/del_blog/<int:blogid>')
+def del_blog(blogid):
+    qsession = get_session()
+    blog = qsession.query(blogtable).filter_by(blogid=blogid).first()
+    qsession.delete(blog)
+    qsession.commit()
+    return redirect(url_for('home_page'))
+
+
+@app.route('/edit_blog/<int:blogid>', methods=['GET', 'POST'])
+def edit_blog(blogid):
+    qsession = get_session()
+    blog = qsession.query(blogtable).filter_by(blogid=blogid).first()
+    if request.method == 'POST':
+        blog.title = request.form['title']
+        blog.text = request.form['text']
+        qsession.commit()
+        return redirect(url_for('home_page'))
+    return render_template('edit_blog.html', blog=blog)
+
+@app.route('/<int:blogid>', methods=['GET'])
+def show_blog(blogid):
+    qsession = get_session()
+    blog = qsession.query(blogtable).filter_by(blogid=blogid).first()
+    return render_template('show_blog.html', blog=blog)
+
+
+def add_blog(userid, title, text):
+    blog = blogtable(
+        userid = userid,
+        title = title,
+        text = text
+    )
+    qsession = get_session()
+    qsession.add(blog)
+    qsession.commit()
+
+@app.route('/publish', methods=['GET', 'POST'])
+def publish():
+    if request.method == 'POST':
+        userid = session['cur_user_id']
+        title = request.form['title']
+        text = request.form['text']
+
+        add_blog(userid, title, text)
+
+
     return redirect(url_for('home_page'))
 def add_user(username, password):
     user = usertable(
@@ -60,8 +107,11 @@ def login():
             error = 'no some user'
     return render_template('login.html', error=error)
 
-@app.route('/logout')
+@app.route('/logout',methods=['GET'])
 def logout():
+    session.pop('logged_in', None)
+    session['cur_user_id'] = None
+    flash('you were logged out')
     return redirect(url_for('home_page'))
 
 if __name__=='__main__':

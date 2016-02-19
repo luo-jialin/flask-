@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+{% extends "layout.html" %}
+{% block body %}
+    <form action="{{ url_for('edit_blog', blogid=blog.blogid) }}" method="post" class="edit-entry">
+        <dl>
+            <dt>Title</dt>
+            <dd><input type="text" size="30" name="title" value="{{ blog.title }}"></dd>
+            <dt>Text:</dt>
+            <dd><textarea name="text" rows="5" cols="40">{{ blog.text }}</textarea></dd>
+            <dd><input type="submit" value="Confirm"></dd>
+        </dl>
+    </form>
+{% endblock %}
