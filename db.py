@@ -21,6 +21,14 @@ class blogtable(Base):
     title = Column(String, nullable=False)
     text = Column(String, nullable=False)
 
+class commenttable(Base):
+    __tablename__='commenttable'
+    __table_args__ = {'sqlite_autoincrement': True}
+    commentid = Column(Integer, primary_key=True, autoincrement=True)
+    blogid = Column(Integer, nullable=False)
+    comment_by_id = Column(Integer, nullable=False)
+    comment_text = Column(String, nullable=False)
+
 def create_table():
     Base.metadata.create_all(engine)
 

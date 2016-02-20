@@ -15,8 +15,27 @@ app.config.from_object(__name__)
 @app.route('/')
 def home_page():
     qsession = get_session()
-    entries = qsession.query(blogtable).filter_by(userid=session['cur_user_id']).all()
+    #entries = qsession.query(blogtable).filter_by(userid=session['cur_user_id']).all()
+    entries = qsession.query(blogtable).all()
     return render_template('show_entries.html', entries=entries)
+
+@app.route('/mange')
+def manage():
+    qsession = get_session()
+    entries = qsession.query(blogtable).filter_by(userid=session['cur_user_id']).all()
+    return render_template('manage.html', entries=entries)
+
+@app.route('/comment/<int:blogid>', methods=['GET', 'POST'])
+def comment(blogid):
+    com = commenttable(
+        blogid = blogid,
+        comment_by_id = session['cur_user_id'],
+        comment_text = request.form['text']
+    )
+    qsession = get_session()
+    qsession.add(com)
+    qsession.commit()
+    return redirect(url_for('show_blog', blogid=blogid))
 
 @app.route('/del_blog/<int:blogid>')
 def del_blog(blogid):
@@ -42,7 +61,8 @@ def edit_blog(blogid):
 def show_blog(blogid):
     qsession = get_session()
     blog = qsession.query(blogtable).filter_by(blogid=blogid).first()
-    return render_template('show_blog.html', blog=blog)
+    comments = qsession.query(commenttable).filter_by(blogid=blogid).all()
+    return render_template('show_blog.html', blog=blog, comments=comments)
 
 
 def add_blog(userid, title, text):
